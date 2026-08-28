@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>p5js fullscreen template</title>
+  </head>
+  <style type="text/css">
+    #canvas-container canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+  </style>
+  <body>
+    <div id="canvas-container"></div>
+  </body>
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/p5@2.3.1/lib/p5.min.js"
+  ></script>
+  <script type="text/javascript">
+    const white = 255;
+    const black = 0;
+    let shouldDraw = 0;
+
+    function setup() {
+      const canvas = createCanvas(windowWidth, windowHeight);
+      canvas.parent("canvas-container");
+    }
+
+    function draw() {
+      background(white);
+      translate(width / 2, height / 2);
+      shouldDraw = second() % 2;
+      if (shouldDraw) {
+        stroke(black);
+        circle(0, 0, 100);
+      }
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+  </script>
+</html>

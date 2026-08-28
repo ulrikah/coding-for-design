@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>p5js fullscreen template</title>
+    <title>representing time</title>
   </head>
   <style type="text/css">
     #canvas-container canvas {
@@ -21,6 +21,8 @@
   <script type="text/javascript">
     const white = 255;
     const black = 0;
+    const primaryColor = black;
+    const secondaryColor = white;
     let shouldDraw = 0;
 
     function setup() {
@@ -29,13 +31,13 @@
     }
 
     function draw() {
-      background(white);
+      background(primaryColor);
       translate(width / 2, height / 2);
-      shouldDraw = second() % 2;
-      if (shouldDraw) {
-        stroke(black);
-        circle(0, 0, 100);
-      }
+      fill(primaryColor)
+      stroke(secondaryColor);
+      strokeWeight(5);
+      const radius = (millis() % 1000) / 2
+      circle(0, 0, radius);
     }
 
     function windowResized() {

@@ -23,7 +23,6 @@
     const black = 0;
     const primaryColor = black;
     const secondaryColor = white;
-    let shouldDraw = 0;
 
     function setup() {
       const canvas = createCanvas(windowWidth, windowHeight);
@@ -33,10 +32,10 @@
     function draw() {
       background(primaryColor);
       translate(width / 2, height / 2);
-      fill(primaryColor)
+      fill(secondaryColor)
       stroke(secondaryColor);
       strokeWeight(5);
-      const radius = (millis() % 1000) / 2
+      const radius = 250 * (sin((TWO_PI * millis()) / 60 / 1000) + 1)
       circle(0, 0, radius);
     }
 

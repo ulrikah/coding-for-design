@@ -19,21 +19,20 @@
     src="https://cdn.jsdelivr.net/npm/p5@2.3.1/lib/p5.min.js"
   ></script>
   <script type="text/javascript">
-    const white = 255;
-    const black = 0;
-    const primaryColor = black;
-    const secondaryColor = white;
+    const primaryColor = "black";
+    const colors = ["orange", "pink", "red"]
 
     function setup() {
       const canvas = createCanvas(windowWidth, windowHeight);
       canvas.parent("canvas-container");
+      frameRate(10)
     }
 
     function draw() {
       background(primaryColor);
-      translate(width / 2, height / 2);
-      fill(secondaryColor)
-      stroke(secondaryColor);
+      translate(width / 2, height / 2); 
+      fill(primaryColor) 
+      stroke(colors[Math.floor(Math.random() * colors.length)]);
       strokeWeight(5);
       const radius = 250 * (sin((TWO_PI * millis()) / 60 / 1000) + 1)
       circle(0, 0, radius);

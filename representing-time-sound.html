@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+  <head>
+    <title>representing time</title>
+  </head>
+  <style type="text/css">
+    #canvas-container canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+  </style>
+  <body>
+    <div id="canvas-container"></div>
+  </body>
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/p5@2.3.1/lib/p5.min.js"
+  ></script>
+
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/p5.sound@0.4.1/dist/p5.sound.min.js"
+  ></script>
+  <script type="text/javascript">
+    const primaryColor = "pink";
+    const secondaryColor = "orange";
+    const colors = ["orange", "pink", "red", "green"];
+
+    let mic, amp;
+    let micStarted = false;
+
+    function setup() {
+      const canvas = createCanvas(windowWidth, windowHeight);
+      frameRate(30);
+
+      canvas.parent("canvas-container");
+      canvas.mousePressed(toggleMic);
+
+      mic = new p5.AudioIn();
+      amp = new p5.Amplitude();
+      mic.connect(amp);
+      textAlign(CENTER);
+      textSize(10);
+      describe(
+        "Click to toggle microphone on and off. Background turns red with louder sound.",
+      );
+    }
+
+    function draw() {
+      if (micStarted) {
+        text("click to stop", width / 10, height / 10);
+      } else {
+        text("click to start", width / 10, height / 10);
+        return
+      }
+      translate(width / 2, height / 2);
+      let level = amp.getLevel();
+      let r = map(level, 0, 0.3, 0, 255);
+      fill(255);
+
+      background(primaryColor);
+
+
+      fill(0, 0, 0, 0);
+      // stroke(colors[Math.floor(Math.random() * colors.length)]);
+      stroke(r, 255, 255)
+      strokeWeight(50);
+      const radius = 220 * (sin((TWO_PI * millis()) / 200 / 90) + 1);
+      const radius2 = 220 * (sin((TWO_PI * millis()) / 80 / 100) + 1);
+      const radius3 = 229 * (sin((TWO_PI * millis()) / 60 / 100) + 1);
+      circle(0, 0, radius);
+      circle(-150, -150, radius);
+      circle(-100, -100, radius2);
+      circle(-50, -50, radius);
+      circle(150, 150, radius);
+      circle(100, 100, radius2);
+      circle(50, 50, radius);
+      circle(200, -200, radius2);
+      circle(-200, 200, radius2);
+      circle(300, -300, radius3);
+      circle(250, -250, radius3);
+      circle(500, -500, radius3);
+      circle(-500, 500, radius3);
+      circle(-400, 400, radius3);
+
+    }
+
+    function toggleMic() {
+      if (!micStarted) {
+        mic.start();
+        micStarted = true;
+      } else {
+        mic.stop();
+        micStarted = false;
+      }
+    }
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+  </script>
+</html>

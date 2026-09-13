@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+  <head>
+    <title>representing time — ms, s, m, h (pollock)</title>
+  </head>
+  <style type="text/css">
+    #canvas-container canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+  </style>
+  <body>
+    <div id="canvas-container"></div>
+  </body>
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/p5@2.3.1/lib/p5.min.js"
+  ></script>
+  <script type="text/javascript">
+    // Pollock-style representation of time.
+    // Four concentric rings (ms, s, m, h). The marker on each ring flicks
+    // paint drips + splatters as it sweeps. Paint accumulates on the canvas.
+    // Even cycles lay down one color, odd cycles lay down a contrasting one,
+    // so each rollover shifts the palette instead of clearing the canvas.
+    const rings = [
+      { name: "ms", max: 1000, radius: 90,  dir: 1,
+        palette: [[255, 184, 28], [26, 26, 26]], cycle: 0 },
+      { name: "s",  max: 60,   radius: 160, dir: -1,
+        palette: [[228, 38, 42], [245, 242, 232]], cycle: 0 },
+      { name: "m",  max: 60,   radius: 230, dir: 1,
+        palette: [[24, 116, 205], [201, 151, 54]], cycle: 0 },
+      { name: "h",  max: 24,   radius: 300, dir: -1,
+        palette: [[124, 47, 123], [214, 90, 31]], cycle: 0 },
+    ];
+
+    let paintLayer; // accumulates the drips/splatters
+    let lastPos = {};
+
+    function setup() {
+      const canvas = createCanvas(windowWidth, windowHeight);
+      canvas.parent("canvas-container");
+      frameRate(60);
+      paintLayer = createGraphics(windowWidth, windowHeight);
+      paintLayer.background(245, 242, 232); // off-white canvas
+    }
+
+    function draw() {
+      image(paintLayer, 0, 0);
+      translate(width / 2, height / 2);
+
+      const now = new Date();
+      const ms = now.getMilliseconds();
+      const s  = now.getSeconds() + ms / 1000;
+      const m  = now.getMinutes() + s / 60;
+      const h  = (now.getHours() % 24) + m / 60;
+      const values = { ms, s, m, h };
+
+      for (const ring of rings) {
+        const progress = values[ring.name] / ring.max;
+
+        // bump cycle counter on rollover
+        const whole = Math.floor(values[ring.name]);
+        if (whole < (ring.lastWhole ?? whole)) ring.cycle++;
+        ring.lastWhole = whole;
+
+        // even cycles use palette[0], odd cycles use palette[1]
+        const col = ring.palette[ring.cycle % 2];
+
+        // marker position on the ring
+        const angle = -HALF_PI + TWO_PI * progress * ring.dir;
+        const x = ring.radius * cos(angle);
+        const y = ring.radius * sin(angle);
+
+        // flick paint from the last position to the current one
+        const lp = lastPos[ring.name];
+        if (lp) {
+          flickPaint(lp.x + width / 2, lp.y + height / 2,
+                     x + width / 2, y + height / 2, col, ring);
+        }
+        lastPos[ring.name] = { x, y };
+
+        // faint guide ring
+        noFill();
+        stroke(0, 0, 0, 18);
+        strokeWeight(1);
+        circle(0, 0, ring.radius * 2);
+
+        // marker dot
+        noStroke();
+        fill(col[0], col[1], col[2]);
+        circle(x, y, 10);
+      }
+    }
+
+    // Draw a drippy stroke + scattered splatters between two points.
+    function flickPaint(x1, y1, x2, y2, col, ring) {
+      const c = paintLayer;
+      c.push();
+      c.noFill();
+
+      // main drippy line: a few jittered segments
+      c.stroke(col[0], col[1], col[2], 200);
+      c.strokeWeight(random(1, 3));
+      c.beginShape();
+      const steps = 6;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const jx = lerp(x1, x2, t) + random(-3, 3);
+        const jy = lerp(y1, y2, t) + random(-3, 3);
+        c.vertex(jx, jy);
+      }
+      c.endShape();
+
+      // occasional thick drip
+      if (random() < 0.3) {
+        c.stroke(col[0], col[1], col[2], 220);
+        c.strokeWeight(random(2, 5));
+        c.point(x2 + random(-2, 2), y2 + random(-2, 2));
+      }
+
+      // splatter cluster at the leading edge
+      const splats = floor(random(0, 6));
+      for (let i = 0; i < splats; i++) {
+        const a = random(TWO_PI);
+        const d = random(4, 40);
+        const sx = x2 + cos(a) * d;
+        const sy = y2 + sin(a) * d;
+        c.noStroke();
+        c.fill(col[0], col[1], col[2], random(120, 230));
+        c.circle(sx, sy, random(1, 5));
+      }
+      c.pop();
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      paintLayer = createGraphics(windowWidth, windowHeight);
+      paintLayer.background(245, 242, 232);
+    }
+  </script>
+</html>

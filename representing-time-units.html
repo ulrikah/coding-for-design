@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+  <head>
+    <title>representing time — ms, s, m, h</title>
+  </head>
+  <style type="text/css">
+    #canvas-container canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+  </style>
+  <body>
+    <div id="canvas-container"></div>
+  </body>
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/p5@2.3.1/lib/p5.min.js"
+  ></script>
+  <script type="text/javascript">
+    // Four concentric rings, one per time unit.
+    // Each ring completes a full cycle as its unit rolls over:
+    //   ms -> 1000, s -> 60, m -> 60, h -> 24
+    const rings = [
+      { name: "ms", max: 1000, color: [255, 180, 80], radius: 90, dir: 1, cycle: 0 },
+      { name: "s",  max: 60,   color: [255, 100, 120], radius: 160, dir: -1, cycle: 0 },
+      { name: "m",  max: 60,   color: [120, 200, 255], radius: 230, dir: 1, cycle: 0 },
+      { name: "h",  max: 24,   color: [180, 120, 255], radius: 300, dir: -1, cycle: 0 },
+    ];
+
+    function setup() {
+      const canvas = createCanvas(windowWidth, windowHeight);
+      canvas.parent("canvas-container");
+      frameRate(60);
+    }
+
+    function draw() {
+      background(20, 22, 30);
+      translate(width / 2, height / 2);
+
+      const now = new Date();
+      const ms = now.getMilliseconds();
+      const s  = now.getSeconds() + ms / 1000;
+      const m  = now.getMinutes() + s / 60;
+      const h  = (now.getHours() % 24) + m / 60;
+      const values = { ms, s, m, h };
+
+      for (const ring of rings) {
+        const progress = values[ring.name] / ring.max; // 0..1
+
+        // bump cycle counter when a unit rolls over
+        const whole = Math.floor(values[ring.name]);
+        if (ring.name === "ms") {
+          if (whole < ring.lastWhole) ring.cycle++;
+        } else {
+          if (whole < ring.lastWhole) ring.cycle++;
+        }
+        ring.lastWhole = whole;
+
+        // even cycles paint outward, odd cycles erase back to zero
+        const painting = ring.cycle % 2 === 0;
+        const sweep = painting ? progress : 1 - progress;
+
+        // track
+        noFill();
+        stroke(255, 255, 255, 25);
+        strokeWeight(2);
+        circle(0, 0, ring.radius * 2);
+
+        // filled arc
+        stroke(ring.color[0], ring.color[1], ring.color[2]);
+        strokeWeight(6);
+        const angle = TWO_PI * sweep * ring.dir;
+        const start = -HALF_PI;
+        const end = start + angle;
+        arc(0, 0, ring.radius * 2, ring.radius * 2, start, end);
+
+        // marker dot at the leading edge
+        const x = ring.radius * cos(end);
+        const y = ring.radius * sin(end);
+        noStroke();
+        fill(ring.color[0], ring.color[1], ring.color[2]);
+        circle(x, y, 12);
+
+        // label
+        // fill(255);
+        // textAlign(CENTER, CENTER);
+        // textSize(11);
+        // const labelAngle = end;
+        // const lx = (ring.radius + 22) * cos(labelAngle);
+        // const ly = (ring.radius + 22) * sin(labelAngle);
+        // const display =
+        //   ring.name === "ms" ? Math.floor(ms)
+        //   : ring.name === "h" ? Math.floor(h)
+        //   : Math.floor(values[ring.name]);
+        // text(`${display}${ring.name}`, lx, ly);
+      }
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+  </script>
+</html>
